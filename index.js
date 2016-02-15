@@ -21,11 +21,18 @@ var build = {};
  
     
     // given the 
-    fs.readdir(argv[0], function(err, data){
+    fs.readdir(argv[0], function(err, files){
         // should return atleast a meta.json file
         // if notes are present then 1 or more qvnote files
         //     qvnote files contain contents.json and meta.json files
-        
+        console.log(files);
+        fs.readFile(argv[0]+"/"+files[1],function(err, data){
+            if(err){
+                throw err;
+            }
+       
+            console.log(data.toString());
+        });
     });
     
     
