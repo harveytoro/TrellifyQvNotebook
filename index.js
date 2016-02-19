@@ -1,12 +1,12 @@
 var Promise = require('es6-promise').Promise;
 var fs = require("fs");
 var trello = require("node-trello");
-var config = require("./config.js");
+var config = require("./config-debug.js");
 
-//var tr = new trello(config.Settings.trelloKey, config.Settings.trelloAuth);
+var tr = new trello(config.Settings.trelloKey, config.Settings.trelloAuth);
 
 // A QVNotebook converts to a list and mutiple cards
-var build = {listName:"", cards:[]};
+var build = {"listName":"", "cards":[]};
 
 (function (argv){
     
@@ -44,14 +44,14 @@ var build = {listName:"", cards:[]};
             readingFiles.push(new Promise(function(toResolve, orReject){
            
                  fs.readFile(argv[0]+"/"+file+"/meta.json", function(err, data){
-                    toResolve({'file':file, 'meta':data.toString()});
+                    toResolve({'file':file, 'meta':JSON.parse(data.toString())});
                  
                  });
             }).then(function(data){
    
                 return new Promise(function(toResolve, orReject){
                      fs.readFile(argv[0]+"/"+data.file+"/content.json", function(err, content){
-                         data.content = content.toString();
+                         data.content = JSON.parse(content.toString());
                       toResolve(data);
                   });
                 });
@@ -73,6 +73,36 @@ var build = {listName:"", cards:[]};
   
 	      // got the build obj that we can now work on trellifying 
           console.log(build)
+          //members/my/boards
+          
+          var trelloPromise = new Promise(function(toResolve, toReject){
+              tr.get("/1/members/my/boards", function(err, data){toResolve(data);})
+          }).then(function(boards){
+              // 
+              boards.forEach(function(board){
+                  if(board.name == argv[1]){
+                    return new Promise(function(toResolve, orReject){
+                      tr.post("/1/boards/"+board.id+"/lists", {name: build.listName}, function(err, list){toResolve(list)});  
+                    }).then(function(data){
+                        var addingCards = [];
+                        build.cards.forEach(function(card){
+                            console.log(card.meta.title);
+                            addingCards.push(new Promise(function(toResolve, orReject){
+                                
+                                tr.post("/1/cards",{name:card.meta.title, idList:data.id, desc: card.content.cells[0].data}, function(err, card){
+                                    toResolve(card);
+                                });
+                            }));
+                          Promise.all(addingCards).then(function(value){
+                              console.log("done")
+                          });
+                        });
+                    });
+                        
+                  }
+              });
+          })
+          
         });
         
         
