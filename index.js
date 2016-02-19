@@ -1,3 +1,4 @@
+var Promise = require('es6-promise').Promise;
 var fs = require("fs");
 var trello = require("node-trello");
 var config = require("./config.js");
@@ -5,7 +6,7 @@ var config = require("./config.js");
 //var tr = new trello(config.Settings.trelloKey, config.Settings.trelloAuth);
 
 // A QVNotebook converts to a list and mutiple cards
-var build = {};
+var build = {listName:"", cards:[]};
 
 (function (argv){
     
@@ -19,34 +20,64 @@ var build = {};
         return;
     }
  
+    var notebooks;
     
-    // given the 
-    fs.readdir(argv[0], function(err, files){
-        // should return atleast a meta.json file
-        // if notes are present then 1 or more qvnote files
-        //     qvnote files contain contents.json and meta.json files
-        console.log(files);
-        fs.readFile(argv[0]+"/"+files[1],function(err, data){
+    
+    var read = new Promise(function(toResolve, orReject){
+        
+        fs.readdir(argv[0], function(err, files){toResolve(files);});
+        
+    }).then(function(files){
+
+        fs.readFile(argv[0]+"/meta.json", function(err, data){
             if(err){
                 throw err;
             }
-       
-            console.log(data.toString());
+            build.listName = JSON.parse(data.toString())["name"];
         });
+        
+        files.splice(files.indexOf("meta.json"),1);
+     
+        var readingFiles = [];
+        files.forEach(function(file){
+       
+            readingFiles.push(new Promise(function(toResolve, orReject){
+           
+                 fs.readFile(argv[0]+"/"+file+"/meta.json", function(err, data){
+                    toResolve({'file':file, 'meta':data.toString()});
+                 
+                 });
+            }).then(function(data){
+   
+                return new Promise(function(toResolve, orReject){
+                     fs.readFile(argv[0]+"/"+data.file+"/content.json", function(err, content){
+                         data.content = content.toString();
+                      toResolve(data);
+                  });
+                });
+                
+                 
+            }).then(function(data){
+               
+                return new Promise(function(toResolve, orReject){
+                    
+                    build.cards.push(data)
+                    
+                    toResolve(build);
+                });
+            }));
+            
+        });
+        
+        Promise.all(readingFiles).then(function(value){
+  
+	      // got the build obj that we can now work on trellifying 
+          console.log(build)
+        });
+        
+        
     });
     
-    
-    
-    
-    /*fs.readFile(argv[0], function(err, data){
-       if(err){
-           throw err;
-       }
-       
-       console.log(data.toString());
-       
-        
-    });*/
     
     
 })(process.argv.slice(2));
