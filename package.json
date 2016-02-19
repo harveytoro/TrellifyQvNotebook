@@ -1,10 +1,10 @@
 {
   "name": "TrellifyQvNotebook",
-  "version": "0.1",
+  "version": "1.0.0",
   "description": "Convert Quiver notebook to trello board",
   "dependencies": {
-    "node-trello": "*"
+    "es6-promise": "^3.1.2",
+    "node-trello": "1.1.2"
   },
-  
   "license": "MIT"
 }
