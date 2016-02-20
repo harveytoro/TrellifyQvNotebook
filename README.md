@@ -1,6 +1,6 @@
 # Trellify QvNotebook
 
-**NodeJS script to convert [Quiver](http://happenapps.com/#quiver) to [Trello](https://trello.com) list**
+**NodeJS script to convert [Quiver](http://happenapps.com/#quiver) notebook to [Trello](https://trello.com) list**
 
 ## TODO
 
@@ -13,8 +13,6 @@
   - [ ] Add new cards for new notes 
 
 ## Usage
-
-To use the extension in the current form.
 
 Download the source
 
