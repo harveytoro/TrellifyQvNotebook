@@ -18,4 +18,12 @@ Download the source
 
 Run npm install
 
+Modify config.js
+
+```javascript
+    trelloKey: "Trello key here",
+    trelloAuth: "Trello auth token here"  
+```
+To get a trello developer key and auth token go [here](https://trello.com/app-key) 
+
 node index.js PATH_TO_.qvnotebook_FILE BOARD_NAME
